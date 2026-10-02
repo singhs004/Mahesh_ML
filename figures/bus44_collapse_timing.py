@@ -13,29 +13,31 @@ T_WIN, T_PRE, T_INF = 0.500, 0.0019, 0.0173
 T_DEC = T_TRIP + T_WIN + T_PRE + T_INF             # 1.0192 s
 TAU_SVC = 0.150
 T_SVC = T_DEC + TAU_SVC                            # 1.1692 s (+T_comm)
-V0, V_ANSI, V_UV = 0.94, 0.90, 0.60
-T_UV = 3.10                                        # UV relay operation
+V0, V_ANSI, V_UV = 0.942, 0.90, 0.60                # V0 from paper Table 20
+V_NC_MIN, V_CC_MIN, V_CC_END, V_PF_END = 0.621, 0.782, 0.86, 0.938  # Table 20
 
 DT = 1e-3
 t = np.arange(0.0, 10.0 + DT, DT)
 
 
 def v_nc_fn(tt):
+    """No control: smooth, monotonic voltage collapse towards the Table 20
+    minimum (no step changes; slope is zero at the line trip)."""
     tt = np.asarray(tt, dtype=float)
     tau = np.clip(tt - T_TRIP, 0, None)
-    slope, tc = 0.155, 0.15
-    ramp = V0 - slope * (tau - tc * (1 - np.exp(-tau / tc)))
-    post = 0.55 + 0.05 * np.exp(-(tt - T_UV) / 3.0)
-    return np.where(tt < T_UV, ramp, post)
+    a = 1.0
+    return V_NC_MIN + (V0 - V_NC_MIN) * (1 + tau / a) * np.exp(-tau / a)
 
 
 def v_cc_fn(tt):
+    """Conventional control: same initial decline as NC but shallower
+    (always above NC), smooth recovery towards the Table 20 value at 10 s."""
+    tt = np.asarray(tt, dtype=float)
     tau = np.clip(tt - T_TRIP, 0, None)
-    a = 0.40
-    v = 0.785 + (V0 - 0.785) * (1 + tau / a) * np.exp(-tau / a)
-    t2 = 4.8
-    rec = np.where(tt > t2, (0.86 - 0.785) * (1 - np.exp(-(tt - t2) / 1.6)),
-                   0.0)
+    a = 1.0
+    dip = V0 - 0.700
+    v = V0 - dip * (1 - (1 + tau / a) * np.exp(-tau / a))
+    rec = 0.1623 / (1 + np.exp(-(tt - 5.0) / 1.2))
     return v + rec
 
 
@@ -43,7 +45,7 @@ v_nc = v_nc_fn(t)
 v_cc = v_cc_fn(t)
 
 
-def pf(t_act, tau=TAU_SVC, v_end=0.935, tau_rec=0.9):
+def pf(t_act, tau=TAU_SVC, v_end=V_PF_END, tau_rec=0.9):
     """NC trajectory until t_act; then SVC support ramps in over its
     response time and drives the voltage to the post-disturbance level."""
     v = v_nc.copy()

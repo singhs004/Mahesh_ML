@@ -10,7 +10,7 @@ import style
 def plot(out="rotor_angle_timing"):
     style.apply()
     rng = np.random.default_rng(7)
-    nz = lambda: rng.normal(0, 0.35, m.t.size)
+    nz = lambda: rng.normal(0, 0.15, m.t.size)
     gens = m.stable_gens()
     nc, _ = m.g10("T")
     st0, _ = m.g10("T", "STATCOM", 0.0)

@@ -24,7 +24,7 @@ def plot(out="g10_nc_cc_pf_timing"):
         ax1.plot(m.t, y, color=c, lw=2.2, ls=ls,
                  label=f"{name} ($H$={h} s, stable)")
     ax1.set_xlim(0, m.T_END)
-    ax1.set_ylim(0, 80)
+    ax1.set_ylim(10, 45)
     ax1.set_xlabel("Time (s)", fontsize=12)
     ax1.set_ylabel("Rotor angle $\\delta$ (degrees)", fontsize=12)
     ax1.set_title("(a) Stable Generators G1, G4 and G7", fontsize=11.5)

@@ -18,10 +18,10 @@ def plot(out="delta_delta_timing"):
     for (name, y), c, mk, off in zip(gens.items(),
                                      ["#1f6fc5", "#2e8b3a", "#a0179e"],
                                      ["o", "s", "^"], [50, 20, 0]):
-        ax1.plot(m.t, y - y[0] + nz(0.25), color=c, lw=1.5, marker=mk, ms=6,
+        ax1.plot(m.t, y - y[0] + nz(0.08), color=c, lw=1.5, marker=mk, ms=6,
                  markevery=(off, 200), label=name)
     ax1.set_xlim(0, m.T_END)
-    ax1.set_ylim(-35, 45)
+    ax1.set_ylim(-15, 20)
     ax1.set_xlabel("Time (s)")
     ax1.set_ylabel("Δδ (degrees)")
     ax1.set_title("(a) Stable generators", fontsize=11)

@@ -36,15 +36,15 @@ T_END = 4.0
 t = np.round(np.arange(0.0, T_END + DT / 2, DT), 6)
 
 DELTA0 = 19.0                                      # deg, pre-fault G10
-PM = 5.0
+PM = 7.0
 P_PRE = PM / np.sin(np.deg2rad(DELTA0))
-K_FAULT = 0.30
-P_POST = {"T": 2.4, "CC": 3.3, "combined": 1.0}
-P_TGT = PM / np.sin(np.deg2rad(30.0))
-U_SS, T_HOLD, TAU_REL = 0.85, 1.60, 0.70
-D_U, D_C = 0.25, 2.0
+K_FAULT = 0.0                                      # bolted fault close to G10
+P_POST = {"T": 5.0, "CC": 5.6, "combined": 4.4}
+P_TGT = PM / np.sin(np.deg2rad(26.0))
+U_SS, T_HOLD, TAU_REL = 0.60, 0.92, 0.20
+D_U, D_C = 0.25, 2.5
 Q_RATED = 150.0
-Q_REQ = {"T": 140.0, "combined": 170.0}
+Q_REQ = {"T": 148.2, "combined": 168.4}     # paper Tables 12 and 31
 
 
 def u_profile(tt, t_start, tau):
@@ -91,17 +91,31 @@ def g10(case="T", device=None, t_comm=0.0, cap=Q_RATED):
     return np.rad2deg(sol.y[0]), q
 
 
+# stable machines: (pre-fault angle, natural frequency Hz, fault-on Pmax
+# factor, post-fault Pmax factor, damping); remote from the fault, so they
+# accelerate less than G10 during 0.10-0.25 s
+GENS = {"G1": (20.0, 0.70, 0.55, 0.95, 0.9),
+        "G4": (25.0, 0.65, 0.50, 0.93, 0.7),
+        "G7": (28.0, 0.62, 0.45, 0.92, 0.5)}
+H_GEN = {"G1": 5.5, "G4": 4.8, "G7": 4.5, "G10": 3.5}
+
+
 def stable_gens():
-    """G1, G4, G7 absolute rotor angles (deg) for the same fault."""
+    """G1, G4, G7 absolute rotor angles (deg) from the same swing equation;
+    the angle leaves its pre-fault value with zero slope (speed deviation
+    is zero at fault onset)."""
     out = {}
-    for name, base, amp, sigma, period in [("G1", 20.0, 35.0, 0.82, 1.45),
-                                           ("G4", 25.0, 42.6, 0.66, 1.55),
-                                           ("G7", 28.0, 46.0, 0.49, 1.60)]:
-        y = np.full_like(t, base)
-        m = t >= T_FAULT
-        tau = t[m] - T_FAULT
-        y[m] += amp * np.exp(-sigma * tau) * np.sin(2 * np.pi * tau / period)
-        out[name] = y
+    for name, (d0, fn, kf, kp, damp) in GENS.items():
+        pmax = (2 * np.pi * fn) ** 2 / np.cos(np.deg2rad(d0))
+        pm = pmax * np.sin(np.deg2rad(d0))
+
+        def rhs(tt, x, pmax=pmax, pm=pm, kf=kf, kp=kp, damp=damp):
+            k = 1.0 if tt < T_FAULT else (kf if tt < T_CLEAR else kp)
+            return [x[1], pm - k * pmax * np.sin(x[0]) - damp * x[1]]
+
+        sol = solve_ivp(rhs, (0, T_END), [np.deg2rad(d0), 0.0], t_eval=t,
+                        max_step=1e-3, rtol=1e-8, atol=1e-10)
+        out[name] = np.rad2deg(sol.y[0])
     return out
 
 
@@ -131,7 +145,9 @@ def summary(path="g10_results.json"):
            "sweep": [], "gens": {}}
     for name, y in stable_gens().items():
         res["gens"][name] = {"peak": float(y.max()),
-                             "peak_dev": float(y.max() - y[0])}
+                             "peak_dev": float(y.max() - y[0]),
+                             "at_clear_dev": float(y[t == T_CLEAR][0] - y[0])}
+    res["g10_at_clear_dev"] = float(nc[t == T_CLEAR][0] - DELTA0)
     for tc in [0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500]:
         row = {"tcomm_ms": tc}
         for dev in ("STATCOM", "SVC"):

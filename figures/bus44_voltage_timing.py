@@ -4,7 +4,7 @@ CNN-LSTM + SVC action re-timed to the measured latency budget.
 Line trip at t = 0.5 s. Decision available 519.2 ms later (t = 1.019 s);
 SVC response ~150 ms, so reactive support starts at t = 1.169 s + T_comm.
 Until that instant the controlled trajectory equals the no-control one.
-Pre-disturbance voltage assumed 1.0 p.u.
+Pre-disturbance voltage 0.942 p.u. (paper Table 20).
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -28,7 +28,10 @@ def smooth_noise(scale, corr=0.08):
     return scale * n
 
 
-def voltage(v_final, tau_settle, dip, tau_peak, v0=1.0):
+V0 = 0.942                                         # paper Table 20
+
+
+def voltage(v_final, tau_settle, dip, tau_peak, v0=V0):
     v = np.full_like(t, v0)
     m = t >= T_TRIP
     tt = t[m] - T_TRIP
@@ -37,9 +40,9 @@ def voltage(v_final, tau_settle, dip, tau_peak, v0=1.0):
     return v
 
 
-v_sg = voltage(0.945, 1.0, 0.080, 0.75)            # SG-only baseline
-v_nc = voltage(0.915, 2.0, 0.130, 1.10)            # 50 % RES, no control
-v_target = v_sg - 0.006                            # supported trajectory
+v_sg = voltage(0.935, 1.0, 0.060, 0.75)            # SG-only baseline
+v_nc = voltage(0.910, 2.0, 0.105, 1.10)            # 50 % RES, no control
+v_target = v_sg - 0.004                            # supported trajectory
 
 
 def cnn_lstm_svc(t_act, tau=TAU_SVC):
@@ -104,7 +107,7 @@ def plot(out="bus44_voltage_timing"):
             rotation=90, ha="right", va="center", fontsize=8.5)
 
     ax.set_xlim(0, 10)
-    ax.set_ylim(0.54, 1.05)
+    ax.set_ylim(0.54, 0.98)
     ax.set_xlabel("Time (s)", fontsize=12)
     ax.set_ylabel("Bus 44 voltage magnitude (p.u.)", fontsize=12)
     ax.grid(True, color="0.85", lw=0.8)
