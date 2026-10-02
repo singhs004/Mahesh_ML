@@ -1,0 +1,206 @@
+{
+ "delta0": 19.0,
+ "t_dec": 0.6192,
+ "t_act": {
+  "STATCOM": 0.6492,
+  "SVC": 0.7692
+ },
+ "nc_cross": 1.465,
+ "cc_cross": 1.598,
+ "sweep": [
+  {
+   "tcomm_ms": 0,
+   "STATCOM": {
+    "act": 0.6492,
+    "peak": 64.12863964572398,
+    "peak_dev": 45.12863964572398,
+    "stable": true
+   },
+   "SVC": {
+    "act": 0.7692,
+    "peak": 68.50517895632991,
+    "peak_dev": 49.505178956329914,
+    "stable": true
+   }
+  },
+  {
+   "tcomm_ms": 50,
+   "STATCOM": {
+    "act": 0.6992,
+    "peak": 70.01885971338076,
+    "peak_dev": 51.01885971338076,
+    "stable": true
+   },
+   "SVC": {
+    "act": 0.8192,
+    "peak": 74.68866347276922,
+    "peak_dev": 55.68866347276922,
+    "stable": true
+   }
+  },
+  {
+   "tcomm_ms": 100,
+   "STATCOM": {
+    "act": 0.7492,
+    "peak": 76.36657693142722,
+    "peak_dev": 57.36657693142722,
+    "stable": true
+   },
+   "SVC": {
+    "act": 0.8692,
+    "peak": 81.34662121048486,
+    "peak_dev": 62.346621210484855,
+    "stable": true
+   }
+  },
+  {
+   "tcomm_ms": 150,
+   "STATCOM": {
+    "act": 0.7992,
+    "peak": 83.19579787789492,
+    "peak_dev": 64.19579787789492,
+    "stable": true
+   },
+   "SVC": {
+    "act": 0.9192,
+    "peak": 88.51871052160891,
+    "peak_dev": 69.51871052160891,
+    "stable": true
+   }
+  },
+  {
+   "tcomm_ms": 200,
+   "STATCOM": {
+    "act": 0.8492,
+    "peak": 90.55152592567804,
+    "peak_dev": 71.55152592567804,
+    "stable": true
+   },
+   "SVC": {
+    "act": 0.9692000000000001,
+    "peak": 96.27498300851107,
+    "peak_dev": 77.27498300851107,
+    "stable": true
+   }
+  },
+  {
+   "tcomm_ms": 250,
+   "STATCOM": {
+    "act": 0.8992,
+    "peak": 98.51445501958197,
+    "peak_dev": 79.51445501958197,
+    "stable": true
+   },
+   "SVC": {
+    "act": 1.0192,
+    "peak": 104.74055608424479,
+    "peak_dev": 85.74055608424479,
+    "stable": true
+   }
+  },
+  {
+   "tcomm_ms": 300,
+   "STATCOM": {
+    "act": 0.9492,
+    "peak": 107.23148447830577,
+    "peak_dev": 88.23148447830577,
+    "stable": true
+   },
+   "SVC": {
+    "act": 1.0692,
+    "peak": 114.15478314265786,
+    "peak_dev": 95.15478314265786,
+    "stable": true
+   }
+  },
+  {
+   "tcomm_ms": 350,
+   "STATCOM": {
+    "act": 0.9992,
+    "peak": 116.99442765489098,
+    "peak_dev": 97.99442765489098,
+    "stable": true
+   },
+   "SVC": {
+    "act": 1.1192,
+    "peak": 125.0578930670425,
+    "peak_dev": 106.0578930670425,
+    "stable": true
+   }
+  },
+  {
+   "tcomm_ms": 400,
+   "STATCOM": {
+    "act": 1.0492,
+    "peak": 128.5170027142934,
+    "peak_dev": 109.5170027142934,
+    "stable": true
+   },
+   "SVC": {
+    "act": 1.1692,
+    "peak": 139.3796380412332,
+    "peak_dev": 120.37963804123319,
+    "stable": true
+   }
+  },
+  {
+   "tcomm_ms": 450,
+   "STATCOM": {
+    "act": 1.0992,
+    "peak": 145.69816425918,
+    "peak_dev": 126.69816425918,
+    "stable": true
+   },
+   "SVC": {
+    "act": 1.2192,
+    "peak": null,
+    "peak_dev": null,
+    "stable": false
+   }
+  },
+  {
+   "tcomm_ms": 500,
+   "STATCOM": {
+    "act": 1.1492,
+    "peak": null,
+    "peak_dev": null,
+    "stable": false
+   },
+   "SVC": {
+    "act": 1.2692,
+    "peak": null,
+    "peak_dev": null,
+    "stable": false
+   }
+  }
+ ],
+ "gens": {
+  "G1": {
+   "peak": 46.466944158398505,
+   "peak_dev": 26.466944158398505
+  },
+  "G4": {
+   "peak": 58.42485918330266,
+   "peak_dev": 33.42485918330266
+  },
+  "G7": {
+   "peak": 66.10726111545719,
+   "peak_dev": 38.10726111545719
+  }
+ },
+ "crit": {
+  "STATCOM": 0.45234374999999993,
+  "SVC": 0.416015625
+ },
+ "sat": {
+  "T_peak": 64.12863964572398,
+  "T_qmax": 140.0,
+  "comb_peak": 73.18451112101992,
+  "comb_demand": 170.0,
+  "window": [
+   0.64,
+   3.225
+  ],
+  "comb_nc_cross": 1.326
+ }
+}

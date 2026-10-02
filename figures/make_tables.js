@@ -2,6 +2,11 @@ const fs = require('fs');
 const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, BorderStyle, ShadingType, HeadingLevel } = require('docx');
 
+const R = JSON.parse(fs.readFileSync(__dirname + '/g10_results.json', 'utf8'));
+const row = ms => R.sweep.find(r => r.tcomm_ms === ms);
+const deg = v => `${v.toFixed(1)}°`;
+const pk = (ms, d) => deg(row(ms)[d].peak);
+const pkd = (ms, d) => deg(row(ms)[d].peak_dev);
 const FONT = 'Times New Roman';
 const W = 9360; // 6.5in text width on Letter
 const thin = { style: BorderStyle.SINGLE, size: 4, color: '000000' };
@@ -85,23 +90,25 @@ const children = [
     ['Generator and BESS power', 'BESS', '0.50', '1.019', '1.019 (ramp 250 MW/s)', '1.219'],
     ['G10 NC / CC / PF', 'STATCOM', '0.10', '0.619', '0.649', '0.849'],
     ['G10 delay sensitivity', 'STATCOM', '0.10', '0.619', '0.649', ['0.649 + ', ...sub('T', 'comm')]],
-    ['STATCOM saturation', 'STATCOM', '0.25', '0.769', '0.799', '—'],
+    ['STATCOM saturation', 'STATCOM', '0.10', '0.619', '0.649', '—'],
   ]),
   note('Action instant = disturbance + 519.2 ms + device response (30 ms STATCOM, 150 ms SVC) + Tcomm.'),
 
   ...caption('III', 'Key Results of the Re-timed Figures'),
   table([2300, 3000, 2000, 2060],
     ['Figure', 'Case', 'Metric', 'Value'], [
-    ['Rotor angle (G10)', 'No control', 'Peak δ', 'Loses synchronism'],
-    ['', ['STATCOM, ', ...sub('T', 'comm'), '=0'], 'Peak δ', '52.9°'],
-    ['', ['STATCOM, ', ...sub('T', 'comm'), '=200 ms'], 'Peak δ', '117.4°'],
-    ['', ['SVC, ', ...sub('T', 'comm'), '=0'], 'Peak δ', '97.1°'],
+    ['All rotor-angle figures', 'G10 pre-fault angle', 'δ0', deg(R.delta0)],
+    ['', 'G1 / G4 / G7', 'Peak δ (Δδ)', `${deg(R.gens.G1.peak)} / ${deg(R.gens.G4.peak)} / ${deg(R.gens.G7.peak)} (${deg(R.gens.G1.peak_dev)} / ${deg(R.gens.G4.peak_dev)} / ${deg(R.gens.G7.peak_dev)})`],
+    ['Rotor angle (G10)', 'No control', '180° crossing', `${R.nc_cross.toFixed(2)} s`],
+    ['', ['STATCOM, ', ...sub('T', 'comm'), '=0'], 'Peak δ', pk(0, 'STATCOM')],
+    ['', ['STATCOM, ', ...sub('T', 'comm'), '=200 ms'], 'Peak δ', pk(200, 'STATCOM')],
+    ['', ['SVC, ', ...sub('T', 'comm'), '=0'], 'Peak δ', pk(0, 'SVC')],
     ['System frequency', 'No control', 'Nadir', '48.30 Hz'],
     ['', 'Conventional PI-AGC', 'Nadir', '49.10 Hz'],
     ['', ['CNN-LSTM + SVC, ', ...sub('T', 'comm'), '=0 / 200 ms'], 'Nadir', '48.30 Hz (before action)'],
-    ['Two-panel Δδ (G10)', ['STATCOM, ', ...sub('T', 'comm'), '=0'], 'Peak Δδ', '20.7°'],
-    ['', ['STATCOM, ', ...sub('T', 'comm'), '=200 ms'], 'Peak Δδ', '43.1°'],
-    ['', ['SVC, ', ...sub('T', 'comm'), '=0'], 'Peak Δδ', '34.6°'],
+    ['Two-panel Δδ (G10)', ['STATCOM, ', ...sub('T', 'comm'), '=0'], 'Peak Δδ', pkd(0, 'STATCOM')],
+    ['', ['STATCOM, ', ...sub('T', 'comm'), '=200 ms'], 'Peak Δδ', pkd(200, 'STATCOM')],
+    ['', ['SVC, ', ...sub('T', 'comm'), '=0'], 'Peak Δδ', pkd(0, 'SVC')],
     ['Bus 44 voltage (wind variability)', 'SG-only baseline', 'Nadir / time < 0.90 p.u.', '0.889 p.u. / 1.0 s'],
     ['', '50% RES, no control', 'Nadir / time < 0.90 p.u.', '0.831 p.u. / 4.2 s'],
     ['', ['CNN-LSTM + SVC, ', ...sub('T', 'comm'), '=0'], 'Nadir / time < 0.90 p.u.', '0.859 p.u. / 1.4 s'],
@@ -121,31 +128,25 @@ const children = [
     ['', 'All cases', 'UFLS-1 / UFLS-2 pickup (NC)', '0.92 s / 1.13 s (before SVC action)'],
     ['Generator and BESS power', 'BESS Bus 3 / Bus 29', 'Full output reached', '1.219 s / 1.331 s'],
     ['', 'BESS total', 'Delivered in first-swing window (0.50–0.70 s)', '0 MW'],
-    ['G10 NC / CC / PF', 'NC', 'Loss of synchronism', '1.44 s'],
-    ['', 'CC', 'Loss of synchronism', '1.68 s'],
-    ['', ['PF, ', ...sub('T', 'comm'), '=0'], 'Peak δ', '51.6°'],
-    ['', ['PF, ', ...sub('T', 'comm'), '=200 ms'], 'Peak δ', '79.5°'],
-    ['STATCOM saturation', 'Case T alone (140 Mvar)', 'Peak δ / margin', '64.9° / 115°'],
-    ['', 'Combined (205 Mvar demand, capped 150)', 'Peak δ / margin', '81.2° / 99°'],
-    ['', 'Combined', 'Saturation window', '0.809–1.59 s'],
-    ['', 'No control', '180° crossing', '1.70 s'],
+    ['G10 NC / CC / PF', 'NC', 'Loss of synchronism', `${R.nc_cross.toFixed(2)} s`],
+    ['', 'CC', 'Loss of synchronism', `${R.cc_cross.toFixed(2)} s`],
+    ['', ['PF, ', ...sub('T', 'comm'), '=0'], 'Peak δ', pk(0, 'STATCOM')],
+    ['', ['PF, ', ...sub('T', 'comm'), '=200 ms'], 'Peak δ', pk(200, 'STATCOM')],
+    ['STATCOM saturation', `Case T alone (${R.sat.T_qmax.toFixed(0)} Mvar)`, 'Peak δ / margin', `${deg(R.sat.T_peak)} / ${(180 - R.sat.T_peak).toFixed(0)}°`],
+    ['', `Combined (${R.sat.comb_demand.toFixed(0)} Mvar demand, capped 150)`, 'Peak δ / margin', `${deg(R.sat.comb_peak)} / ${(180 - R.sat.comb_peak).toFixed(0)}°`],
+    ['', 'Combined', 'Saturation window', `${R.sat.window[0].toFixed(3)}–${R.sat.window[1].toFixed(2)} s`],
+    ['', 'No control (combined)', '180° crossing', `${R.sat.comb_nc_cross.toFixed(2)} s`],
   ]),
 
   ...caption('IV', 'Communication-Delay Sensitivity of G10 Transient Stability'),
   table([1500, 2000, 2000, 2000, 1860],
     [sub('T', 'comm').length ? ['', ...sub('T', 'comm'), ' (ms)'] : '',
      'STATCOM action (s)', 'STATCOM peak δ', 'SVC action (s)', 'SVC peak δ'], [
-    ['0', '0.649', '52.9° (stable)', '0.769', '97.1° (stable)'],
-    ['50', '0.699', '66.2° (stable)', '0.819', '116.4° (stable)'],
-    ['100', '0.749', '81.8° (stable)', '0.869', '136.2° (stable)'],
-    ['150', '0.799', '99.3° (stable)', '0.919', '156.1° (stable)'],
-    ['200', '0.849', '117.4° (stable)', '0.969', 'Unstable'],
-    ['250', '0.899', '135.3° (stable)', '1.019', 'Unstable'],
-    ['300', '0.949', '152.0° (stable)', '1.069', 'Unstable'],
-    ['350', '0.999', 'Unstable', '1.119', 'Unstable'],
-    ['400–500', '1.049–1.149', 'Unstable', '1.169–1.269', 'Unstable'],
+    ...R.sweep.map(r => [String(r.tcomm_ms),
+      r.STATCOM.act.toFixed(3), r.STATCOM.stable ? `${deg(r.STATCOM.peak)} (stable)` : 'Unstable',
+      r.SVC.act.toFixed(3), r.SVC.stable ? `${deg(r.SVC.peak)} (stable)` : 'Unstable']),
   ]),
-  note('Critical Tcomm ≈ 342 ms for STATCOM (≈ 891 ms total after fault onset) and ≈ 150–200 ms for SVC.'),
+  note(`Critical Tcomm ≈ ${(R.crit.STATCOM * 1e3).toFixed(0)} ms for STATCOM (action at ${(R.t_act.STATCOM + R.crit.STATCOM).toFixed(3)} s) and ≈ ${(R.crit.SVC * 1e3).toFixed(0)} ms for SVC (action at ${(R.t_act.SVC + R.crit.SVC).toFixed(3)} s). All G10 values come from one shared model (g10_model.py).`),
 ];
 
 const doc = new Document({
